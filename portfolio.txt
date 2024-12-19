@@ -1,0 +1,185 @@
+
+
+// язык 1: Python (Flask)
+// REST API дл€ управлени€ пользовател€ми
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+users = []
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    return jsonify(users)
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.json
+    user = {'id': len(users) + 1, 'name': data['name']}
+    users.append(user)
+    return jsonify(user), 201
+
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.json
+    for user in users:
+        if user['id'] == user_id:
+            user['name'] = data.get('name', user['name'])
+            return jsonify(user)
+    return jsonify({'error': 'User not found'}), 404
+
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    global users
+    users = [user for user in users if user['id'] != user_id]
+    return '', 204
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+// ---
+
+// язык 2: Java
+// Console Tic-Tac-Toe Game
+
+import java.util.Scanner;
+
+public class TicTacToe {
+    private static char[][] board = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
+    private static char currentPlayer = 'X';
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            printBoard();
+            System.out.println("Player " + currentPlayer + ", enter your move (row and column): ");
+            int row = scanner.nextInt() - 1;
+            int col = scanner.nextInt() - 1;
+
+            if (board[row][col] == ' ') {
+                board[row][col] = currentPlayer;
+                if (checkWin()) {
+                    printBoard();
+                    System.out.println("Player " + currentPlayer + " wins!");
+                    break;
+                }
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            } else {
+                System.out.println("This spot is already taken. Try again!");
+            }
+        }
+    }
+
+    private static void printBoard() {
+        System.out.println("  1 2 3");
+        for (int i = 0; i < 3; i++) {
+            System.out.print((i + 1) + " ");
+            for (int j = 0; j < 3; j++) {
+                System.out.print(board[i][j] + (j < 2 ? "|" : ""));
+            }
+            System.out.println();
+            if (i < 2) System.out.println("  -----");
+        }
+    }
+
+    private static boolean checkWin() {
+        for (int i = 0; i < 3; i++) {
+            if (board[i][0] == currentPlayer && board[i][1] == currentPlayer && board[i][2] == currentPlayer) return true;
+            if (board[0][i] == currentPlayer && board[1][i] == currentPlayer && board[2][i] == currentPlayer) return true;
+        }
+        return (board[0][0] == currentPlayer && board[1][1] == currentPlayer && board[2][2] == currentPlayer) ||
+               (board[0][2] == currentPlayer && board[1][1] == currentPlayer && board[2][0] == currentPlayer);
+    }
+}
+
+// ---
+
+// язык 3: Node.js
+// WebSocket Chat Server
+
+const WebSocket = require('ws');
+
+const server = new WebSocket.Server({ port: 8080 });
+let clients = [];
+
+server.on('connection', (socket) => {
+    clients.push(socket);
+
+    socket.on('message', (message) => {
+        clients.forEach(client => {
+            if (client !== socket && client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
+
+    socket.on('close', () => {
+        clients = clients.filter(client => client !== socket);
+    });
+});
+
+console.log('WebSocket server is running on ws://localhost:8080');
+
+// ---
+
+// язык 4: C#
+// Simple GUI Calculator
+
+using System;
+using System.Windows.Forms;
+
+public class Calculator : Form {
+    private TextBox display;
+    private double result = 0;
+    private string operation = "";
+    private bool isOperationPerformed = false;
+
+    public Calculator() {
+        display = new TextBox() { Dock = DockStyle.Top, ReadOnly = true };
+        var panel = new TableLayoutPanel() { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 5 };
+        
+        string[] buttons = {
+            "7", "8", "9", "/", "4", "5", "6", "*",
+            "1", "2", "3", "-", "C", "0", "=", "+"
+        };
+
+        foreach (var buttonText in buttons) {
+            var button = new Button() { Text = buttonText };
+            button.Click += OnButtonClick;
+            panel.Controls.Add(button);
+        }
+
+        Controls.Add(display);
+        Controls.Add(panel);
+    }
+
+    private void OnButtonClick(object sender, EventArgs e) {
+        var button = sender as Button;
+        if ("0123456789".Contains(button.Text)) {
+            if (isOperationPerformed) {
+                display.Text = "";
+                isOperationPerformed = false;
+            }
+            display.Text += button.Text;
+        } else if ("+-*/".Contains(button.Text)) {
+            result = double.Parse(display.Text);
+            operation = button.Text;
+            isOperationPerformed = true;
+        } else if (button.Text == "=") {
+            double secondNumber = double.Parse(display.Text);
+            if (operation == "+") result += secondNumber;
+            if (operation == "-") result -= secondNumber;
+            if (operation == "*") result *= secondNumber;
+            if (operation == "/") result /= secondNumber;
+            display.Text = result.ToString();
+        } else if (button.Text == "C") {
+            display.Text = "";
+            result = 0;
+            operation = "";
+        }
+    }
+
+    public static void Main() {
+        Application.Run(new Calculator());
+    }
+}
